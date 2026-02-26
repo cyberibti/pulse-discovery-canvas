@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pulse — Discovery Canvas</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAF9;
+    --surface: #FFFFFF;
+    --surface-2: #F5F5F3;
+    --border: #E5E5E1;
+    --border-light: #D4D4CF;
+    --text: #1A1A1A;
+    --text-muted: #6B6B6B;
+    --text-dim: #9A9A9A;
+    --accent-blue: #2563EB;
+    --accent-purple: #7C3AED;
+    --accent-green: #059669;
+    --accent-amber: #D97706;
+    --accent-rose: #E11D48;
+    --accent-orange: #EA580C;
+    --pain: #DC2626;
+    --gap: #EA580C;
+    --solution: #059669;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  .canvas-header {
+    padding: 40px 48px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 32px;
+    animation: fadeDown 0.6s ease;
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .logo-area {
+    display: flex; align-items: center; gap: 14px;
+  }
+
+  .logo-mark {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700; font-size: 18px; color: white;
+  }
+
+  .logo-text h1 {
+    font-size: 22px; font-weight: 700; letter-spacing: -0.5px;
+  }
+
+  .logo-text span {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 2px;
+  }
+
+  .header-meta {
+    text-align: right; font-size: 13px; color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+  }
+
+  .header-meta .date { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+
+  /* Legend */
+  .legend {
+    display: flex; gap: 24px; padding: 16px 48px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    font-family: 'Space Mono', monospace;
+    color: var(--text-muted);
+    animation: fadeUp 0.6s ease 0.1s both;
+  }
+
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+  }
+  .legend-dot.pain { background: var(--pain); }
+  .legend-dot.gap { background: var(--gap); }
+  .legend-dot.solution { background: var(--solution); }
+  .legend-dot.user { background: var(--accent-blue); }
+
+  /* Main canvas */
+  .canvas {
+    padding: 32px 48px 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  /* Section */
+  .section {
+    animation: fadeUp 0.6s ease both;
+  }
+  .section:nth-child(1) { animation-delay: 0.15s; }
+  .section:nth-child(2) { animation-delay: 0.25s; }
+  .section:nth-child(3) { animation-delay: 0.35s; }
+  .section:nth-child(4) { animation-delay: 0.45s; }
+  .section:nth-child(5) { animation-delay: 0.55s; }
+
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    padding-left: 2px;
+  }
+
+  .section-label .num {
+    color: var(--accent-blue);
+    margin-right: 8px;
+  }
+
+  /* Users Grid */
+  .users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+
+  .user-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    transition: all 0.3s ease;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .user-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .user-card:hover { border-color: var(--border-light); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+  .user-card:hover::before { opacity: 1; }
+
+  .user-card.blue::before { background: var(--accent-blue); }
+  .user-card.purple::before { background: var(--accent-purple); }
+  .user-card.green::before { background: var(--accent-green); }
+  .user-card.amber::before { background: var(--accent-amber); }
+  .user-card.rose::before { background: var(--accent-rose); }
+  .user-card.orange::before { background: var(--accent-orange); }
+
+  .user-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .user-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; color: white;
+    flex-shrink: 0;
+  }
+  .user-card.blue .user-avatar { background: var(--accent-blue); }
+  .user-card.purple .user-avatar { background: var(--accent-purple); }
+  .user-card.green .user-avatar { background: var(--accent-green); }
+  .user-card.amber .user-avatar { background: var(--accent-amber); }
+  .user-card.rose .user-avatar { background: var(--accent-rose); }
+  .user-card.orange .user-avatar { background: var(--accent-orange); }
+
+  .user-name { font-weight: 600; font-size: 15px; }
+  .user-role {
+    font-size: 12px; color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+  }
+
+  .user-desc {
+    font-size: 13px; color: var(--text-muted);
+    margin-bottom: 16px; line-height: 1.6;
+  }
+
+  .tag-row {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .tag {
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    padding: 3px 10px;
+    border-radius: 100px;
+    border: 1px solid;
+  }
+
+  .tag.pain { color: var(--pain); border-color: rgba(220,38,38,0.3); background: rgba(220,38,38,0.06); }
+  .tag.gap { color: var(--gap); border-color: rgba(234,88,12,0.3); background: rgba(234,88,12,0.06); }
+
+  /* Pain Points */
+  .pain-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+
+  .pain-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--pain);
+    border-radius: var(--radius-sm);
+    padding: 18px 20px;
+    transition: all 0.2s ease;
+  }
+  .pain-card:hover { border-color: var(--border-light); border-left-color: var(--pain); }
+
+  .pain-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--pain);
+    margin-bottom: 8px;
+  }
+
+  .pain-title { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+  .pain-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+  .pain-users {
+    margin-top: 10px;
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+
+  .pain-user-tag {
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    padding: 2px 8px;
+    border-radius: 100px;
+    background: var(--surface-2);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  /* Gaps */
+  .gap-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gap);
+    border-radius: var(--radius-sm);
+    padding: 18px 20px;
+    transition: all 0.2s ease;
+  }
+  .gap-card:hover { border-color: var(--border-light); border-left-color: var(--gap); }
+
+  .gap-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--gap);
+    margin-bottom: 8px;
+  }
+
+  .gap-title { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+  .gap-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+  /* MVP Scope */
+  .mvp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }
+
+  .mvp-module {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    transition: all 0.2s ease;
+  }
+  .mvp-module:hover { border-color: var(--border-light); }
+
+  .mvp-module-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .mvp-icon {
+    width: 32px; height: 32px;
+    background: rgba(5,150,105,0.08);
+    border: 1px solid rgba(5,150,105,0.15);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+  }
+
+  .mvp-module-name {
+    font-weight: 600; font-size: 15px;
+  }
+
+  .mvp-priority {
+    margin-left: auto;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 3px 10px;
+    border-radius: 100px;
+  }
+  .mvp-priority.p0 { color: var(--pain); background: rgba(220,38,38,0.06); border: 1px solid rgba(220,38,38,0.2); }
+  .mvp-priority.p1 { color: var(--accent-amber); background: rgba(217,119,6,0.06); border: 1px solid rgba(217,119,6,0.2); }
+  .mvp-priority.p2 { color: var(--accent-blue); background: rgba(37,99,235,0.06); border: 1px solid rgba(37,99,235,0.2); }
+
+  .feature-list {
+    list-style: none; padding: 0;
+  }
+
+  .feature-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .feature-item:last-child { border-bottom: none; }
+
+  .feature-check {
+    width: 18px; height: 18px;
+    border: 1.5px solid var(--border-light);
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    color: transparent;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .feature-check:hover {
+    border-color: var(--solution);
+  }
+  .feature-check.checked {
+    background: var(--solution);
+    border-color: var(--solution);
+    color: white;
+  }
+
+  .feature-text { color: var(--text-muted); line-height: 1.5; }
+  .feature-text strong { color: var(--text); font-weight: 500; }
+
+  /* User Journey / Flow */
+  .flow-section {
+    position: relative;
+  }
+
+  .flow-track {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    padding-bottom: 16px;
+  }
+
+  .flow-stage {
+    min-width: 220px;
+    flex: 1;
+    position: relative;
+  }
+
+  .flow-stage-header {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    padding: 14px 16px;
+    font-weight: 600;
+    font-size: 13px;
+    text-align: center;
+    position: relative;
+  }
+
+  .flow-stage-header .stage-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .flow-stage-body {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    padding: 14px 16px;
+    min-height: 120px;
+  }
+
+  .flow-item {
+    font-size: 12px;
+    color: var(--text-muted);
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    line-height: 1.5;
+  }
+  .flow-item:last-child { border-bottom: none; }
+
+  .flow-arrow {
+    position: absolute;
+    right: -14px;
+    top: 18px;
+    color: var(--text-dim);
+    font-size: 18px;
+    z-index: 2;
+  }
+
+  /* Venture Lifecycle */
+  .lifecycle-track {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2px;
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .lifecycle-stage {
+    padding: 20px 16px;
+    text-align: center;
+    transition: all 0.2s ease;
+    cursor: default;
+    position: relative;
+  }
+
+  .lifecycle-stage:nth-child(1) { background: rgba(37,99,235,0.06); }
+  .lifecycle-stage:nth-child(2) { background: rgba(124,58,237,0.06); }
+  .lifecycle-stage:nth-child(3) { background: rgba(5,150,105,0.06); }
+  .lifecycle-stage:nth-child(4) { background: rgba(217,119,6,0.06); }
+  .lifecycle-stage:nth-child(5) { background: rgba(234,88,12,0.06); }
+
+  .lifecycle-stage:hover { filter: brightness(1.3); }
+
+  .lifecycle-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+
+  .lifecycle-name {
+    font-weight: 600; font-size: 13px;
+    margin-bottom: 8px;
+  }
+
+  .lifecycle-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .lifecycle-users {
+    margin-top: 10px;
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    color: var(--text-dim);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .canvas-header { padding: 24px; flex-direction: column; }
+    .canvas { padding: 24px; }
+    .legend { padding: 12px 24px; flex-wrap: wrap; }
+    .users-grid { grid-template-columns: 1fr; }
+    .mvp-grid { grid-template-columns: 1fr; }
+    .lifecycle-track { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="canvas-header">
+  <div class="logo-area">
+    <div class="logo-mark">P</div>
+    <div class="logo-text">
+      <span>Discovery Canvas</span>
+      <h1>Pulse</h1>
+    </div>
+  </div>
+  <div class="header-meta">
+    Sanabil Studio — Venture Builder
+    <div class="date">Feb 2026 · Internal Tool</div>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot user"></div> Users</div>
+  <div class="legend-item"><div class="legend-dot pain"></div> Pain Points</div>
+  <div class="legend-item"><div class="legend-dot gap"></div> Gaps</div>
+  <div class="legend-item"><div class="legend-dot solution"></div> MVP Solution</div>
+</div>
+
+<div class="canvas">
+
+  <!-- ==================== SECTION 1: VENTURE LIFECYCLE ==================== -->
+  <div class="section">
+    <div class="section-label"><span class="num">01</span> Venture Lifecycle — Topic Validation to Series A</div>
+    <div class="lifecycle-track">
+      <div class="lifecycle-stage">
+        <div class="lifecycle-num">Phase 1</div>
+        <div class="lifecycle-name">Topic Validation</div>
+        <div class="lifecycle-desc">Thesis development, market research, opportunity sizing, problem-solution fit</div>
+        <div class="lifecycle-users">Ideation Lead · VA/VM</div>
+      </div>
+      <div class="lifecycle-stage">
+        <div class="lifecycle-num">Phase 2</div>
+        <div class="lifecycle-name">Prototype</div>
+        <div class="lifecycle-desc">Concept design, user testing, technical feasibility, early product build</div>
+        <div class="lifecycle-users">VA/VM · PM · SSU</div>
+      </div>
+      <div class="lifecycle-stage">
+        <div class="lifecycle-num">Phase 3</div>
+        <div class="lifecycle-name">MVP (Optional)</div>
+        <div class="lifecycle-desc">Full product build, first real users, iterate on feedback, validate traction</div>
+        <div class="lifecycle-users">PM · VA/VM · SSU</div>
+      </div>
+      <div class="lifecycle-stage">
+        <div class="lifecycle-num">Phase 4</div>
+        <div class="lifecycle-name">Founder Match</div>
+        <div class="lifecycle-desc">Recruit CEO (and CTO/CPO), transfer context, onboard founding team</div>
+        <div class="lifecycle-users">Portfolio · VA/VM · CEO</div>
+      </div>
+      <div class="lifecycle-stage">
+        <div class="lifecycle-num">Phase 5</div>
+        <div class="lifecycle-name">Spin-out → Series A</div>
+        <div class="lifecycle-desc">Company formation, governance, studio support, growth to Series A</div>
+        <div class="lifecycle-users">CEO · CTO/CPO · Portfolio · SSU</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SECTION 2: KEY USERS ==================== -->
+  <div class="section">
+    <div class="section-label"><span class="num">02</span> Key Users & Their World Today</div>
+    <div class="users-grid">
+
+      <!-- Ideation Lead -->
+      <div class="user-card blue">
+        <div class="user-header">
+          <div class="user-avatar">IL</div>
+          <div>
+            <div class="user-name">Ideation Lead</div>
+            <div class="user-role">Topic sourcing & early validation</div>
+          </div>
+        </div>
+        <div class="user-desc">Identifies and shapes new venture topics. Runs early market research, builds the initial thesis, and drives topic validation before handing off to a Venture Architect/Manager. Currently working across scattered docs with no structured pipeline view.</div>
+        <div class="tag-row">
+          <span class="tag pain">No topic pipeline view</span>
+          <span class="tag pain">Research in random docs</span>
+          <span class="tag gap">No validation framework</span>
+        </div>
+      </div>
+
+      <!-- Venture Architect / Manager -->
+      <div class="user-card purple">
+        <div class="user-header">
+          <div class="user-avatar">VA</div>
+          <div>
+            <div class="user-name">Venture Architect / Manager</div>
+            <div class="user-role">Validation → Prototype → MVP</div>
+          </div>
+        </div>
+        <div class="user-desc">Owns the venture from validated topic through prototype (and optionally MVP). Architect or Manager based on seniority. Drives product direction, coordinates with PM for build, manages handoff to founders. Research and decisions live in scattered docs with no structured handoff process.</div>
+        <div class="tag-row">
+          <span class="tag pain">Research scattered in docs</span>
+          <span class="tag pain">No structured handoff</span>
+          <span class="tag gap">Decision log missing</span>
+        </div>
+      </div>
+
+      <!-- Product Manager -->
+      <div class="user-card green">
+        <div class="user-header">
+          <div class="user-avatar">PM</div>
+          <div>
+            <div class="user-name">Product Manager</div>
+            <div class="user-role">Prototype & MVP execution</div>
+          </div>
+        </div>
+        <div class="user-desc">Executes the product build — manages sprints, design, and dev during prototype and MVP phases. Coordinates with shared services. Currently uses separate Asana/Notion per venture — no consistency, can't compare progress across ventures.</div>
+        <div class="tag-row">
+          <span class="tag pain">Different tool per venture</span>
+          <span class="tag pain">No standard process</span>
+          <span class="tag gap">Sprint visibility</span>
+        </div>
+      </div>
+
+      <!-- Portfolio Manager -->
+      <div class="user-card amber">
+        <div class="user-header">
+          <div class="user-avatar">PF</div>
+          <div>
+            <div class="user-name">Portfolio Manager</div>
+            <div class="user-role">Venture health & governance</div>
+          </div>
+        </div>
+        <div class="user-desc">Tracks venture health post spin-out through Series A. Monitors KPIs, burn rate, milestones. Manages founder relationship and studio support allocation. Currently relies on monthly update emails and manual spreadsheets.</div>
+        <div class="tag-row">
+          <span class="tag pain">Manual KPI collection</span>
+          <span class="tag pain">Stale data (monthly)</span>
+          <span class="tag gap">No early warning system</span>
+        </div>
+      </div>
+
+      <!-- Shared Services Unit -->
+      <div class="user-card rose">
+        <div class="user-header">
+          <div class="user-avatar">SS</div>
+          <div>
+            <div class="user-name">Shared Services Unit</div>
+            <div class="user-role">HR · Talent · Ops · Finance</div>
+          </div>
+        </div>
+        <div class="user-desc">Provides cross-cutting support to all ventures — HR & talent acquisition, operations, and finance. Gets pulled in ad-hoc via Slack with no visibility into upcoming demand or workload across the portfolio. Critical during spin-out for entity setup and founder hiring.</div>
+        <div class="tag-row">
+          <span class="tag pain">Ad-hoc Slack requests</span>
+          <span class="tag pain">No workload visibility</span>
+          <span class="tag gap">Can't plan capacity</span>
+        </div>
+      </div>
+
+      <!-- Founder — CEO -->
+      <div class="user-card orange">
+        <div class="user-header">
+          <div class="user-avatar">CEO</div>
+          <div>
+            <div class="user-name">Founder — CEO</div>
+            <div class="user-role">Post founder-match → Series A</div>
+          </div>
+        </div>
+        <div class="user-desc">Joins when the venture is ready to spin out. Needs to absorb months of context — research, decisions, product status, market data — in days. Leads company formation and growth with studio support. Currently gets a messy handoff of random docs, links, and verbal knowledge.</div>
+        <div class="tag-row">
+          <span class="tag pain">Lost during onboarding</span>
+          <span class="tag pain">Context scattered</span>
+          <span class="tag gap">No knowledge base</span>
+        </div>
+      </div>
+
+      <!-- Founder — CTO / CPO -->
+      <div class="user-card amber">
+        <div class="user-header">
+          <div class="user-avatar">CT</div>
+          <div>
+            <div class="user-name">Founder — CTO / CPO</div>
+            <div class="user-role">Technical or product co-founder</div>
+          </div>
+        </div>
+        <div class="user-desc">Potentially joins alongside the CEO. Needs deep context on product decisions, tech stack, architecture choices, and user research. Often onboards even later than CEO, inheriting a codebase and product with minimal documentation of the "why" behind decisions.</div>
+        <div class="tag-row">
+          <span class="tag pain">No technical context pack</span>
+          <span class="tag pain">Undocumented decisions</span>
+          <span class="tag gap">No product history</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== SECTION 3: PAIN POINTS ==================== -->
+  <div class="section">
+    <div class="section-label"><span class="num">03</span> Pain Points — What's Broken Today</div>
+    <div class="pain-section">
+
+      <div class="pain-card">
+        <div class="pain-label">Pain #1</div>
+        <div class="pain-title">Tool Sprawl & Fragmentation</div>
+        <div class="pain-desc">Every venture uses a different combo of Notion, Asana, Google Sheets, Slack channels. No single source of truth. Context lost between tools.</div>
+        <div class="pain-users">
+          <span class="pain-user-tag">All users</span>
+        </div>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-label">Pain #2</div>
+        <div class="pain-title">Zero Portfolio-Level Visibility</div>
+        <div class="pain-desc">Leadership can't see which ventures are on track, which are burning cash, or where team capacity is going — without manually pinging everyone.</div>
+        <div class="pain-users">
+          <span class="pain-user-tag">Ideation Lead</span>
+          <span class="pain-user-tag">Portfolio Mgr</span>
+        </div>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-label">Pain #3</div>
+        <div class="pain-title">Founder Onboarding is a Black Hole</div>
+        <div class="pain-desc">New founders inherit months of institutional knowledge through ad-hoc meetings and scattered documents. Takes weeks to ramp up. High risk of lost context.</div>
+        <div class="pain-users">
+          <span class="pain-user-tag">CEO</span>
+          <span class="pain-user-tag">CTO/CPO</span>
+          <span class="pain-user-tag">VA/VM</span>
+        </div>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-label">Pain #4</div>
+        <div class="pain-title">No Standard Venture Playbook</div>
+        <div class="pain-desc">Each venture reinvents the wheel — different templates, different processes, different definitions of "ready to spin out." No repeatability.</div>
+        <div class="pain-users">
+          <span class="pain-user-tag">VA/VM</span>
+          <span class="pain-user-tag">PM</span>
+          <span class="pain-user-tag">Ideation Lead</span>
+        </div>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-label">Pain #5</div>
+        <div class="pain-title">Profitability is a Guessing Game</div>
+        <div class="pain-desc">No visibility into cost per venture, resource allocation efficiency, or studio-level burn rate. Financial data lives in separate spreadsheets maintained by finance.</div>
+        <div class="pain-users">
+          <span class="pain-user-tag">Ideation Lead</span>
+          <span class="pain-user-tag">SSU (Finance)</span>
+        </div>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-label">Pain #6</div>
+        <div class="pain-title">Shared Services Overwhelmed by Ad-Hoc</div>
+        <div class="pain-desc">SSU gets random Slack requests with no prioritization, no queue, and no way to plan ahead. Reactive instead of proactive.</div>
+        <div class="pain-users">
+          <span class="pain-user-tag">SSU</span>
+          <span class="pain-user-tag">PM</span>
+          <span class="pain-user-tag">CEO</span>
+        </div>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-label">Pain #7</div>
+        <div class="pain-title">Handoff Gaps Between Phases</div>
+        <div class="pain-desc">When a venture moves from ideation → build → spin-out, critical context drops. Decision rationale, failed experiments, and research insights get lost.</div>
+        <div class="pain-users">
+          <span class="pain-user-tag">IL → VA/VM</span>
+          <span class="pain-user-tag">VA/VM → CEO</span>
+        </div>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-label">Pain #8</div>
+        <div class="pain-title">Status Updates are Manual & Stale</div>
+        <div class="pain-desc">Weekly/monthly updates are manually compiled. By the time leadership sees them, data is old. No real-time pulse on venture health.</div>
+        <div class="pain-users">
+          <span class="pain-user-tag">All users</span>
+        </div>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-label">Pain #9</div>
+        <div class="pain-title">Reactive Issue Detection</div>
+        <div class="pain-desc">Struggling ventures are identified reactively, often when intervention windows have closed. Need leading indicators, not just lagging outcomes.</div>
+        <div class="pain-users">
+          <span class="pain-user-tag">Portfolio Mgr</span>
+          <span class="pain-user-tag">Ideation Lead</span>
+        </div>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-label">Pain #10</div>
+        <div class="pain-title">No Institutional Learning</div>
+        <div class="pain-desc">After 3+ years and 10–20 ventures, no pattern recognition for what distinguishes successful ventures from struggling ones. No benchmarking.</div>
+        <div class="pain-users">
+          <span class="pain-user-tag">Portfolio Mgr</span>
+          <span class="pain-user-tag">VA/VM</span>
+        </div>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-label">Pain #11</div>
+        <div class="pain-title">Studio Ops Infrastructure Gap</div>
+        <div class="pain-desc">Beyond venture tracking, the studio lacks operational infrastructure — knowledge management, people directory, workflow automation, and self-service tools.</div>
+        <div class="pain-users">
+          <span class="pain-user-tag">SSU</span>
+          <span class="pain-user-tag">All users</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== SECTION 4: GAPS ==================== -->
+  <div class="section">
+    <div class="section-label"><span class="num">04</span> Gaps — What's Missing from the Ecosystem</div>
+    <div class="pain-section">
+
+      <div class="gap-card">
+        <div class="gap-label">Gap #1</div>
+        <div class="gap-title">Venture Operating System</div>
+        <div class="gap-desc">No unified system that tracks a venture from thesis through Series A with consistent structure, data, and workflows.</div>
+      </div>
+
+      <div class="gap-card">
+        <div class="gap-label">Gap #2</div>
+        <div class="gap-title">Stage-Gate Framework</div>
+        <div class="gap-desc">No defined criteria or checklist for when a venture is ready to move from one phase to the next. Decisions are gut-feel.</div>
+      </div>
+
+      <div class="gap-card">
+        <div class="gap-label">Gap #3</div>
+        <div class="gap-title">Institutional Memory / Knowledge Base</div>
+        <div class="gap-desc">No structured repository of decisions, learnings, research, and context per venture that persists across team changes.</div>
+      </div>
+
+      <div class="gap-card">
+        <div class="gap-label">Gap #4</div>
+        <div class="gap-title">Resource & Capacity Planning</div>
+        <div class="gap-desc">No view of who is allocated where, what's the utilization rate, and where the bottlenecks are across the studio.</div>
+      </div>
+
+      <div class="gap-card">
+        <div class="gap-label">Gap #5</div>
+        <div class="gap-title">Service Request Workflow</div>
+        <div class="gap-desc">No ticketing or request system for shared services. No SLAs, no queue, no tracking of what's been asked and delivered.</div>
+      </div>
+
+      <div class="gap-card">
+        <div class="gap-label">Gap #6</div>
+        <div class="gap-title">Founder Onboarding Runway</div>
+        <div class="gap-desc">No structured onboarding journey for incoming founders — no "here's everything you need to know" in one place.</div>
+      </div>
+
+      <div class="gap-card">
+        <div class="gap-label">Gap #7</div>
+        <div class="gap-title">Decision Architecture</div>
+        <div class="gap-desc">No defined decision triggers, thresholds, or governance for when to pivot, kill, or double down on a venture. Decisions are gut-feel.</div>
+      </div>
+
+      <div class="gap-card">
+        <div class="gap-label">Gap #8</div>
+        <div class="gap-title">Comparative Benchmarking</div>
+        <div class="gap-desc">No way to extract cross-portfolio learnings or identify what distinguishes successful ventures from struggling ones over time.</div>
+      </div>
+
+      <div class="gap-card">
+        <div class="gap-label">Gap #9</div>
+        <div class="gap-title">Studio Wiki & Knowledge Hub</div>
+        <div class="gap-desc">No centralized knowledge base with announcements, policies, playbooks, SOPs, and people directory for studio operations.</div>
+      </div>
+
+      <div class="gap-card">
+        <div class="gap-label">Gap #10</div>
+        <div class="gap-title">Self-Service & Workflow Automation</div>
+        <div class="gap-desc">No self-service portal for common requests (employment letters, IT setup, visa requests) and no automated onboarding/offboarding workflows.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== SECTION 5: MVP SOLUTION SCOPE ==================== -->
+  <div class="section">
+    <div class="section-label"><span class="num">05</span> MVP Solution Scope — Pulse v1 Features</div>
+    <div class="mvp-grid">
+
+      <!-- Module 1: Venture Pipeline -->
+      <div class="mvp-module">
+        <div class="mvp-module-header">
+          <div class="mvp-icon">🚀</div>
+          <div class="mvp-module-name">Venture Pipeline Board</div>
+          <span class="mvp-priority p0">P0 — Must Have</span>
+        </div>
+        <ul class="feature-list">
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Kanban pipeline view</strong> — Ventures as cards moving through lifecycle stages (Ideation → Validation → Build → Spin-out → Scale)</div>
+          </li>
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Venture profile page</strong> — Thesis, team, stage, key metrics, decision log, linked docs all in one place</div>
+          </li>
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Stage-gate checklists</strong> — Define criteria to advance between phases with approval workflow</div>
+          </li>
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Health indicators</strong> — Traffic light status (on track / at risk / blocked) per venture</div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Module 2: Studio Dashboard -->
+      <div class="mvp-module">
+        <div class="mvp-module-header">
+          <div class="mvp-icon">📊</div>
+          <div class="mvp-module-name">Studio Dashboard</div>
+          <span class="mvp-priority p0">P0 — Must Have</span>
+        </div>
+        <ul class="feature-list">
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Portfolio overview</strong> — All ventures at a glance with status, stage, key metrics, and team</div>
+          </li>
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Burn & budget tracker</strong> — Cost per venture, studio-level spend, budget vs. actuals</div>
+          </li>
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Team allocation map</strong> — Who is on which venture, utilization %, availability</div>
+          </li>
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Activity feed</strong> — Real-time updates across all ventures (decisions, milestones, blockers)</div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Module 3: Venture Workspace -->
+      <div class="mvp-module">
+        <div class="mvp-module-header">
+          <div class="mvp-icon">🗂️</div>
+          <div class="mvp-module-name">Venture Workspace</div>
+          <span class="mvp-priority p0">P0 — Must Have</span>
+        </div>
+        <ul class="feature-list">
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Task management</strong> — Tasks, assignees, due dates, status per venture with standard templates</div>
+          </li>
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Decision log</strong> — Structured record of key decisions, rationale, and who decided</div>
+          </li>
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Document hub</strong> — Central place for all venture docs, research, decks, linked to context</div>
+          </li>
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Timeline / milestone tracker</strong> — Key milestones and deadlines with dependencies</div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Module 4: Founder Onboarding -->
+      <div class="mvp-module">
+        <div class="mvp-module-header">
+          <div class="mvp-icon">🎯</div>
+          <div class="mvp-module-name">Founder Onboarding Hub</div>
+          <span class="mvp-priority p0">P0 — Must Have</span>
+        </div>
+        <ul class="feature-list">
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Venture context pack</strong> — Auto-generated brief with thesis, research, decisions, product status, key contacts for CEO onboarding</div>
+          </li>
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Technical context pack</strong> — Architecture, tech stack, product decisions, user research for CTO/CPO onboarding</div>
+          </li>
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Onboarding checklist</strong> — Step-by-step founder onboarding with tasks, meetings, access setup per role (CEO vs CTO/CPO)</div>
+          </li>
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Studio support menu</strong> — What services founders can request from SSU, who to contact, how to request</div>
+          </li>
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>30-60-90 day plan</strong> — Template milestones for first 90 days post spin-out</div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Module 5: Service Requests -->
+      <div class="mvp-module">
+        <div class="mvp-module-header">
+          <div class="mvp-icon">🎫</div>
+          <div class="mvp-module-name">Service Request System</div>
+          <span class="mvp-priority p1">P1 — Should Have</span>
+        </div>
+        <ul class="feature-list">
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Request intake forms</strong> — Structured forms for legal, finance, HR, ops requests</div>
+          </li>
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Queue & prioritization</strong> — Shared services dashboard with request queue, status, SLAs</div>
+          </li>
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Status tracking</strong> — Requesters can see where their ask is in the pipeline</div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Module 6: Studio Operations Infrastructure (NEW from SSU) -->
+      <div class="mvp-module">
+        <div class="mvp-module-header">
+          <div class="mvp-icon">🏢</div>
+          <div class="mvp-module-name">Studio Operations Infrastructure</div>
+          <span class="mvp-priority p1">P1 — Should Have</span>
+        </div>
+        <ul class="feature-list">
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Knowledge & wiki hub</strong> — Centralized knowledge base replacing Notion, with announcements, policies, playbooks, and SOPs</div>
+          </li>
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>People directory</strong> — Studio team, advisory board, hourly experts with contract status and rates</div>
+          </li>
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Onboarding/offboarding workflows</strong> — IT setup, document review, access provisioning; handover protocols</div>
+          </li>
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Self-service portal</strong> — Employment letters, experience certificates, entry visas, NDA reviews, IT requests</div>
+          </li>
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>People operations</strong> — Performance management cycles, PTO request and approval workflows</div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Module 7: Reporting & Analytics -->
+      <div class="mvp-module">
+        <div class="mvp-module-header">
+          <div class="mvp-icon">📈</div>
+          <div class="mvp-module-name">Reporting & Analytics</div>
+          <span class="mvp-priority p1">P1 — Should Have</span>
+        </div>
+        <ul class="feature-list">
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Venture health reports</strong> — Auto-generated weekly status per venture and portfolio roll-up</div>
+          </li>
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Studio performance metrics</strong> — Ventures launched, time-to-spinout, success rate, cost efficiency</div>
+          </li>
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Exportable board reports</strong> — One-click board-ready or investor-ready portfolio snapshots without manual slide reconstruction</div>
+          </li>
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Comparative benchmarking</strong> — Pattern recognition: which ventures at Stage X achieve Metric Y by Month Z? Surface outlier performance</div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Module 8: Integrations -->
+      <div class="mvp-module">
+        <div class="mvp-module-header">
+          <div class="mvp-icon">🔗</div>
+          <div class="mvp-module-name">Integrations Layer</div>
+          <span class="mvp-priority p2">P2 — Nice to Have</span>
+        </div>
+        <ul class="feature-list">
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Slack notifications</strong> — Key updates, approvals, and alerts pushed to Slack channels</div>
+          </li>
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Google Workspace sync</strong> — Link Google Docs, Sheets, Slides directly to venture workspaces</div>
+          </li>
+          <li class="feature-item">
+            <div class="feature-check" onclick="this.classList.toggle('checked')">✓</div>
+            <div class="feature-text"><strong>Calendar integration</strong> — Milestone dates sync to Google Calendar for the team</div>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
